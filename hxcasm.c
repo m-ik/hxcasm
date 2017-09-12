@@ -7,8 +7,6 @@
 #include "lut.h"
 #include "utils.h"
 
-#define GROWTH_FACTOR	16
-
 void
 suicide(const char *error_str)
 {
@@ -16,55 +14,20 @@ suicide(const char *error_str)
 	exit(1);
 }
 
+
 /*
-	function:		dict_lookup
-	description:	finds if input string exists in a dictionary
-					of type "symbol_t" and returns its corresponding
-					code
-	return:			code of the symbol (uint16_t)
-					NULL if string was not found in the dictionary
+	function:		ainstr2code
+	description:	takes an A hack instruction as an input string
+					and returns its corresponding code
+	return:			code - if the A-instruction is valid
+					0x8001 - missing closing parentheses
+					0x8002 - duplicate label
+					0x8003 - invalid characters in the label name
+	
+	(Note: C-instruction codes are greater or equal
+	to 0xe000, so the aforementioned error codes are
+	valid) 
  */
-
-bool
-lut_lookup(char *key, symbol_t *lut, int sz, uint16_t *code)
-{
-	int i;
-
-	for(i = 0 ; i < sz ; i++)
-	{
-		if(!strcmp(key, lut->str))
-		{
-			*code = lut->val;
-			return true;
-		}
-		lut++;
-	}
-
-	return false;
-}
-
-bool
-is_num(char *str, uint16_t *num)
-{
-	int mul = strlen(str) - 1;
-	*num = 0;
-
-	while(*str != '\0')
-	{
-		if(*str < 48 || *str > 57)
-		{
-			return false;
-		}
-
-		if(mul)
-			*num += ((*str - 48) * mul * 10);
-		else
-			*num += (*str - 48);
-		str++;
-	}
-
-	return true;
-}
 
 uint16_t
 ainstr2code(char *instr, dict_t *l, dict_t *v)
@@ -72,7 +35,7 @@ ainstr2code(char *instr, dict_t *l, dict_t *v)
 	bool ret;
 	uint16_t code;
 
-	ret = is_num(instr, &code);
+	ret = isnum(instr, &code);
 	if(ret)
 	{
 		return code;
@@ -105,26 +68,24 @@ ainstr2code(char *instr, dict_t *l, dict_t *v)
 	return code;
 }
 
-// if c instruction is invalid function returns 0
 /*
 	function:		cinstr2code
 	description:	takes a C hack instruction as an input string
 					and returns its corresponding code
 	return:			code - if the C-instruction is valid
-					1 - if destination is invalid
-					2 - if comparison is invalid
-					3 - if jump is invalid
+					1 - if invalid command
+					2 - if destination is invalid
+					3 - if comparison is invalid
+					4 - if jump is invalid
+	
+	(Note: C-instruction codes are greater or equal
+	to 0xe000, so the aforementioned error codes are
+	valid) 
  */
 
 uint16_t
 cinstr2code(char *str)
 {
-	// flag: 1 -> if instuction is dest=comp
-	//       1 -> if instruction is comp;jump
-	//       2 -> if instuction is dest=comp;jump
-	// jmp_flag: 0 -> no jump
-	//			 1 -> jump 
-
 	uint16_t code = 0, _dst, _cmp, _jmp;
 	int c=0, flag=0, jmp_flag=0;
 	char fields[3][4];
@@ -160,23 +121,17 @@ cinstr2code(char *str)
 	switch(flag)
 	{
 		case 0:
-			// Invalid command
-			code = 0;
-			suicide("[Error] Invalid command in line");
+			return 1;
 			break;
 		case 1:
 			if(jmp_flag)
 			{
-				// fields[0] -> cmp
-				// fields[1] -> jmp
 				_dst = 0;
 				_cmp = 1;
 				_jmp = 2;
 			}
 			else
 			{
-				// fields[0] -> dst
-				// fields[1] -> cmp
 				_dst = 1;
 				_cmp = 2;
 				_jmp = 0;
@@ -195,7 +150,6 @@ cinstr2code(char *str)
 				sizeof(dst_lut)/sizeof(symbol_t), &_dst);
 		if(!ret)
 		{
-			suicide("[Error] Invalid destination in line");
 			return 2;
 		}
 	}
@@ -206,7 +160,6 @@ cinstr2code(char *str)
 				sizeof(cmp_lut)/sizeof(symbol_t), &_cmp);
 		if(!ret)
 		{
-			suicide("[Error] Invalid comparison in line");
 			return 3;
 		}
 	}
@@ -217,7 +170,6 @@ cinstr2code(char *str)
 				sizeof(jmp_lut)/sizeof(symbol_t), &_dst);
 		if(!ret)
 		{
-			suicide("[Error] Invalid jump on line");
 			return 4;
 		}
 	}
@@ -231,8 +183,69 @@ cinstr2code(char *str)
 	return code;
 }
 
+void
+cerror(int err, char *filename, int line)
+{
+	char str[128];
+
+	str[0] = '\0';
+
+	switch(err)
+	{
+		case 1:
+			sprintf(str, "%s:%d [error]: Invalid C-instruction", 
+					filename, line);
+			break;
+		case 2:
+			sprintf(str, "%s:%d [error]: Invalid destination",
+					filename, line);
+			break;
+		case 3:
+			sprintf(str, "%s:%d [error]: Invalid comparison",
+					filename, line);
+			break;
+		case 4:
+			sprintf(str, "%s:%d [error]: Invalid jump",
+					filename, line);
+			break;
+	}
+
+	if(str[0] != '\0')
+		suicide(str);
+}
+
+void
+lerror(int err, char *filename, int line)
+{
+	char str[128];
+
+	str[0] = '\0';
+
+	switch(err)
+	{
+		case 0x8001:
+			sprintf(str, "%s:%d [error]: Missing parentheses",
+					filename, line);
+			break;
+		case 0x8002:
+			sprintf(str, "%s:%d [error]: Duplicate label",
+					filename, line);
+			break;
+		case 0x8003:
+			sprintf(str, "%s:%d [error]: Labels have to contain characters "
+					"(A-Z, a-z, 0-9, _, ., $)",
+					filename, line);
+			break;
+		default:
+			break;
+	}
+	
+	if(str[0] != '\0')
+		suicide(str);
+}
+
 bool
-is_ignored(char *line)
+isignored(char *line)
 {
 	return ( (line[0] == '\0') 
 			|| (line[0] == '/' && line[1] == '/')  
@@ -241,7 +254,7 @@ is_ignored(char *line)
 }
 
 int
-is_label(char *line, uint16_t address, dict_t *labels)
+islabel(char *line, uint16_t address, dict_t *labels)
 {
 	int i, j, sz;
 	symbol_t entry;
@@ -257,7 +270,7 @@ is_label(char *line, uint16_t address, dict_t *labels)
 	
 	if(line[sz - 1] != ')')
 	{
-		suicide("[Error] Missing parentheses");
+		return 0x8001;
 	}
 
 	for(i = 1, j = 0 ; i < sz-1 ; i++, j++)
@@ -271,9 +284,7 @@ is_label(char *line, uint16_t address, dict_t *labels)
 
 		if(!ret)
 		{
-			printf("%s\n", line);
-			suicide("[Error] Labels have to contain characters "
-					"0-9, A-Z, _");
+			return 0x8003;
 		}
 		
 		entry.str[j] = line[i];
@@ -285,7 +296,7 @@ is_label(char *line, uint16_t address, dict_t *labels)
 	
 	if(ret)
 	{
-		suicide("[Error] Duplicate labels");
+		return 0x8002;
 	}
 
 	entry.val = address;
@@ -298,10 +309,10 @@ is_label(char *line, uint16_t address, dict_t *labels)
 int
 main(int argc, char *argv[])
 {
-	char *l, *filename;
+	char *l, *filename, err_str[128];
 	uint16_t code, addr = 0;
 	dict_t *labels, *variables;
-	int ret, lines = 0;
+	int ret, lines = 1;
 	FILE *ifp, *tfp, *ofp;
 
 	if(argc != 2)
@@ -328,22 +339,30 @@ main(int argc, char *argv[])
 	{
 		trim_whitespace(l);
 
-		if(!is_ignored(l))
+		if(!isignored(l))
 		{
-			remove_comments(l);
-
-			ret = is_label(l, addr, labels);
-			if(ret > 0)
+			ret = remove_comments(l);
+			if(ret)
 			{
-				// Not label
+				sprintf(err_str, "%s:%d [error]: invalid comment syntax", 
+						filename, lines);
+				suicide(err_str);
+			}
+
+			ret = islabel(l, addr, labels);
+			lerror(ret, filename, lines);
+			
+			if(!ret)
+			{
 				fwrite(l, sizeof(char), strlen(l), tfp);
 				fwrite("\n", sizeof(char), 1, tfp);
 				addr++;
 			}
-			else if(ret < 0)
+			
+			if(l[0] != '@')
 			{
-				// Label syntax error
-				return 1;
+				ret = cinstr2code(l);
+				cerror(ret, filename, lines);
 			}
 		}
 
@@ -360,7 +379,8 @@ main(int argc, char *argv[])
 		suicide("Cannot open file out.hack");
 	}
 
-	lines = 0;
+	lines = 1;
+
 	while((l = fgetl(tfp)) != NULL)
 	{
 		// handle code

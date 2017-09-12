@@ -1,15 +1,35 @@
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
 
 #include "utils.h"
 
-/*  
-	function: fgetl
-	description: returns a line from a file
-	return: line as a string
-*/
+bool
+isnum(char *str, uint16_t *num)
+{
+	int mul = strlen(str) - 1;
+	*num = 0;
 
-char *fgetl(FILE *fp)
+	while(*str != '\0')
+	{
+		if(*str < 48 || *str > 57)
+		{
+			return false;
+		}
+
+		if(mul)
+			*num += ((*str - 48) * mul * 10);
+		else
+			*num += (*str - 48);
+		str++;
+	}
+
+	return true;
+}
+
+char 
+*fgetl(FILE *fp)
 {
 	char curr, *line;
 	int size = 0, resize = 0;
@@ -41,12 +61,6 @@ char *fgetl(FILE *fp)
 	return line;
 }
 
-/*
-	function:		trim_whitespace
-	description:	removes white space from a string
-	return:			trimmed string
- */
-
 void
 trim_whitespace(char *str)
 {
@@ -61,7 +75,7 @@ trim_whitespace(char *str)
 	*i=0;
 }
 
-void
+int
 remove_comments(char *str)
 {
 	while(*str != '\0')
@@ -71,13 +85,17 @@ remove_comments(char *str)
 			if(*(str+1) == '/')
 			{
 				*str = '\0';
-				return;
+				return 0;
+			}
+			else
+			{
+				return 1;
 			}
 		}
 		str++;
 	}
 	
-	return;
+	return 0;
 }
 
 void

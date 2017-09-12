@@ -1,5 +1,14 @@
+# Files
 *.o
 *.s
 *.S
 *.hack
+*.out
+*.swp
+*.tmp
 hxcasm
+
+# Folders
+tmp/
+out/
+obj/

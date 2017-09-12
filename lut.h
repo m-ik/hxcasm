@@ -3,6 +3,10 @@
 
 #include "dict.h"
 
+/*
+	C-instruction possible comparison fields
+ */
+
 symbol_t cmp_lut[] =
 {	  
 	{"0", 0x2a}, 
@@ -35,6 +39,10 @@ symbol_t cmp_lut[] =
 	{"D|M", 0x55}
 };
 
+/*
+	C-instruction possible destination fields
+ */
+
 symbol_t dst_lut[] =
 {
 	{"", 0x00},
@@ -47,6 +55,10 @@ symbol_t dst_lut[] =
 	{"AMD", 0x07}
 };
 
+/*
+	C-instruction possible jump fields
+ */
+
 symbol_t jmp_lut[] =
 {
 	{"", 0x00},
@@ -58,6 +70,10 @@ symbol_t jmp_lut[] =
 	{"JLE", 0x06},
 	{"JMP", 0x07}
 };
+
+/*
+   A-instruction predefined symbols
+ */
 
 symbol_t sym_lut[] =
 {
