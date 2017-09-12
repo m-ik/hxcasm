@@ -6,8 +6,8 @@ minimal architecture.
 
 # sources
 
-book:		The Elements of Computing Systems
-			Building a Modern Computer from First Principles
-			Noam Nisan and Shimon Schocken
+book:       The Elements of Computing Systems
+            Building a Modern Computer from First Principles
+            Noam Nisan and Shimon Schocken
 
-website:	http://nand2tetris.org
+website:    http://nand2tetris.org
