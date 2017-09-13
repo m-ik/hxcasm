@@ -31,7 +31,7 @@ isnum(char *str, uint16_t *num)
 char 
 *fgetl(FILE *fp)
 {
-	char curr, *line;
+	char curr=0, *line;
 	int size = 0, resize = 0;
 	
 	line = (char *)malloc(512 * sizeof(char));
@@ -56,7 +56,10 @@ char
 	}
 
 	if(feof(fp))
+	{
+		free(line);
 		return NULL;
+	}
 
 	return line;
 }

@@ -73,6 +73,12 @@ dict_lookup(char *key, dict_t *d, uint16_t *val)
 void
 free_dict(dict_t *d)
 {
+	int i;
+
+	for(i = 0 ; i < d->len ; i++)
+	{
+		free(d->entries[i].str);
+	}
 	free(d->entries);
 	free(d);
 }

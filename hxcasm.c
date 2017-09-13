@@ -403,5 +403,8 @@ main(int argc, char *argv[])
 	fclose(tfp);
 	fclose(ofp);
 
+	free_dict(labels);
+	free_dict(variables);
+
 	return 0;
 }
