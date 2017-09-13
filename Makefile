@@ -19,7 +19,7 @@ all: clean $(BIN)
 .c.o:
 	$(CC) $(CFLAGS) -c $<
 
-hxcasm: $(OBJ)
+$(BIN): $(OBJ)
 	$(CC) -o $@ $(OBJ) $(LDFLAGS)
 
 clean:
