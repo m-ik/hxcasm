@@ -4,6 +4,17 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#ifdef DEBUG
+#ifdef __GNUC__
+#define DEBUG_PRINT(fmt, var) printf("%s:%d:%s(): "#var" = " fmt"\n", \
+									__FILE__, __LINE__, __func__, var)
+#else
+#define DEBUG_PRINT(fmt, var) printf(#var" = " fmt"\n", var)
+#endif
+#else
+#define DEBUG_PRINT(fmt, var) do {} while(0)
+#endif
+
 /*
 	function:		isnum
 	description:	checks if a string is a representation

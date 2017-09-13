@@ -1,12 +1,20 @@
+DEBUG = 0
+
 CC = gcc
-CFLAGS = -Wall -Wextra -O3 -g
+CFLAGS = -Wall -Wextra
 LDFLAGS = 
+
+ifeq ($(DEBUG), 1)
+CFLAGS += -DDEBUG -O0 -g
+else
+CFLAGS += -O3
+endif
 
 SRC = utils.c dict.c hxcasm.c
 OBJ = ${SRC:.c=.o}
-EXEC = hxcasm
+BIN = hxcasm
 
-all: clean $(EXEC)
+all: clean $(BIN)
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<
@@ -15,4 +23,8 @@ hxcasm: $(OBJ)
 	$(CC) -o $@ $(OBJ) $(LDFLAGS)
 
 clean:
-	rm -rf $(OBJ) $(EXEC)
+	rm -f $(OBJ) $(BIN)
+
+.PHONY: all clean
+
+.SUFFIXES: .c .o

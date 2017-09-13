@@ -4,8 +4,6 @@
 
 #include "dict.h"
 
-#define GROWTH_SIZE		32
-
 bool
 lut_lookup(char *key, symbol_t *lut, int sz, uint16_t *code)
 {

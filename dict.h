@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define GROWTH_SIZE		32
+
 typedef struct symbol_t
 {
 	char *str;
