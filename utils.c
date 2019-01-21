@@ -11,52 +11,47 @@ isnum(char *str, uint16_t *num)
 	int mul = strlen(str) - 1;
 	*num = 0;
 
-	while(*str != '\0')
-	{
-		if(*str < 48 || *str > 57)
-		{
+	while (*str != '\0') {
+		if (*str < 48 || *str > 57) {
 			return false;
 		}
 
-		if(mul)
+		if (mul) {
 			*num += ((*str - 48) * mul * 10);
-		else
+		} else {
 			*num += (*str - 48);
+		}
 		str++;
 	}
 
 	return true;
 }
 
-char 
+char
 *fgetl(FILE *fp)
 {
 	char curr=0, *line;
 	int size = 0, resize = 0;
-	
+
 	line = (char *)malloc(512 * sizeof(char));
 
-	while(!feof(fp))
-	{
+	while (!feof(fp)) {
 		fread(&curr, sizeof(char), 1, fp);
 		line[size] = curr;
 		size++;
 
-		if(size/512 > resize)
-		{
+		if (size/512 > resize) {
 			resize++;
 			line = (char *)realloc(line, resize * 512 * sizeof(char));
 		}
 
-		if(curr == '\n' || curr == 13)
-		{
+		if (curr == '\n' || curr == 13) {
 			line[size-1] = '\0';
 			break;
 		}
 	}
 
-	if(feof(fp))
-	{
+	if (feof(fp)) {
 		free(line);
 		return NULL;
 	}
@@ -69,11 +64,11 @@ trim_whitespace(char *str)
 {
 	char *i=str, *j=str;
 
-	while(*j != 0)
-	{
+	while (*j != 0) {
 		*i = *j++;
-		if((*i != ' ') && (*i != '\t'))
+		if ((*i != ' ') && (*i != '\t')) {
 			i++;
+		}
 	}
 	*i=0;
 }
@@ -81,23 +76,18 @@ trim_whitespace(char *str)
 int
 remove_comments(char *str)
 {
-	while(*str != '\0')
-	{
-		if(*str == '/')
-		{
-			if(*(str+1) == '/')
-			{
+	while (*str != '\0') {
+		if (*str == '/')	{
+			if (*(str+1) == '/') {
 				*str = '\0';
 				return 0;
-			}
-			else
-			{
+			} else {
 				return 1;
 			}
 		}
 		str++;
 	}
-	
+
 	return 0;
 }
 
@@ -130,9 +120,8 @@ fprint_binary16(FILE *fp, uint16_t num)
 	int i;
 	char bit;
 
-	for(i = 15 ; i != 0 ; i--)
-	{
-		bit = ((num >> i) & 1) + 48; 
+	for (i = 15 ; i != 0 ; i--) {
+		bit = ((num >> i) & 1) + 48;
 		fwrite(&bit, sizeof(char), 1, fp);
 	}
 }

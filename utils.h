@@ -18,7 +18,7 @@
 /*
 	function:		isnum
 	description:	checks if a string is a representation
-					of a 16-bit unsigned integer and writes this 
+					of a 16-bit unsigned integer and writes this
 					integer to num argument
 	return:			true - if the string represents a 16-bit unsigned integer
 					false - if not
@@ -26,7 +26,7 @@
 
 bool isnum(char *str, uint16_t *num);
 
-/*  
+/*
 	function:		fgetl
 	description:	returns a line from a file
 	return:			line as a string
@@ -61,7 +61,7 @@ void print_binary16(uint16_t num);
 
 /*
 	function:		fprint_binary16
-	description:	writes a 16-bit unsigned integer in 
+	description:	writes a 16-bit unsigned integer in
 					binary format (ASCII) to a file
 	return:			-
  */

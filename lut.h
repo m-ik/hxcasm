@@ -7,13 +7,12 @@
 	C-instruction possible comparison fields
  */
 
-symbol_t cmp_lut[] =
-{	  
-	{"0", 0x2a}, 
-	{"1", 0x3f}, 
+symbol_t cmp_lut[] = {
+	{"0", 0x2a},
+	{"1", 0x3f},
 	{"-1", 0x3a},
-	{"D", 0x0c}, 
-	{"A", 0x30}, 
+	{"D", 0x0c},
+	{"A", 0x30},
 	{"!D", 0x0d},
 	{"!A", 0x31},
 	{"-D", 0x0f},
@@ -27,7 +26,7 @@ symbol_t cmp_lut[] =
 	{"A-D", 0x07},
 	{"D&A", 0x00},
 	{"D|A", 0x15},
-	{"M", 0x70}, 
+	{"M", 0x70},
 	{"!M", 0x71},
 	{"-M", 0x73},
 	{"M+1", 0x77},
@@ -43,8 +42,7 @@ symbol_t cmp_lut[] =
 	C-instruction possible destination fields
  */
 
-symbol_t dst_lut[] =
-{
+symbol_t dst_lut[] = {
 	{"", 0x00},
 	{"M", 0x01},
 	{"D", 0x02},
@@ -72,11 +70,10 @@ symbol_t jmp_lut[] =
 };
 
 /*
-   A-instruction predefined symbols
+	A-instruction predefined symbols
  */
 
-symbol_t sym_lut[] =
-{
+symbol_t sym_lut[] = {
 	{"R0", 0},
 	{"R1", 1},
 	{"R2", 2},

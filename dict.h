@@ -5,14 +5,12 @@
 
 #define GROWTH_SIZE		32
 
-typedef struct symbol_t
-{
+typedef struct symbol_t {
 	char *str;
 	uint16_t val;
 } symbol_t;
 
-typedef struct dict_t
-{
+typedef struct dict_t {
 	int len;
 	int cap;
 	symbol_t *entries;
