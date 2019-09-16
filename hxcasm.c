@@ -7,7 +7,12 @@
 #include "lut.h"
 #include "utils.h"
 
-void
+#define INVALID_COMMAND		1
+#define INVALID_DESTINATION	2
+#define INVALID_COMPARISON	3
+#define INVALID_JUMP		4
+
+static void
 suicide(const char *error_str)
 {
 	printf("%s\n", error_str);
@@ -29,7 +34,7 @@ suicide(const char *error_str)
 	valid)
  */
 
-uint16_t
+static uint16_t
 ainstr2code(char *instr, dict_t *l, dict_t *v)
 {
 	bool ret;
@@ -79,25 +84,29 @@ ainstr2code(char *instr, dict_t *l, dict_t *v)
 	valid)
  */
 
-uint16_t
+static uint16_t
 cinstr2code(char *str)
 {
-	uint16_t code = 0, _dst, _cmp, _jmp;
-	int c=0, flag=0, jmp_flag=0;
+	uint8_t c = 0;
+	uint8_t flag = 0;
 	char fields[3][4];
 	bool ret;
 
-	_dst = _cmp = _jmp = 0;
+	uint16_t dst = 0;
+	uint16_t cmp = 0;
+	uint16_t jmp = 0;
+
+	bool jmp_flag = false;
 
 	while (*str != '\0') {
 		if (*str == '=') {
 			fields[flag][c] = 0;
-			flag=1;
-			c=0;
+			flag = 1;
+			c = 0;
 		} else if (*str == ';')	{
 			fields[flag][c] = 0;
-			flag+=1;
-			c=0;
+			flag++;
+			c = 0;
 			jmp_flag = 1;
 		} else {
 			fields[flag][c] = *str;
@@ -110,59 +119,59 @@ cinstr2code(char *str)
 
 	switch (flag) {
 	case 0:
-		return 1;
+		return INVALID_COMMAND;
 	case 1:
 		if (jmp_flag) {
-			_dst = 0;
-			_cmp = 1;
-			_jmp = 2;
+			dst = 0;
+			cmp = 1;
+			jmp = 2;
 		} else {
-			_dst = 1;
-			_cmp = 2;
-			_jmp = 0;
+			dst = 1;
+			cmp = 2;
+			jmp = 0;
 		}
 		break;
 	case 2:
-		_dst = 1;
-		_cmp = 2;
-		_jmp = 3;
+		dst = 1;
+		cmp = 2;
+		jmp = 3;
 		break;
 	}
 
-	if (_dst) {
-		ret = lut_lookup(fields[_dst-1], dst_lut,
-				 sizeof(dst_lut)/sizeof(symbol_t), &_dst);
+	if (dst != 0) {
+		ret = lut_lookup(fields[dst-1], dst_lut,
+				 sizeof(dst_lut)/sizeof(symbol_t), &dst);
 		if (!ret) {
-			return 2;
+			return INVALID_DESTINATION;
 		}
 	}
 
-	if (_cmp) {
-		ret = lut_lookup(fields[_cmp-1], cmp_lut,
-				 sizeof(cmp_lut)/sizeof(symbol_t), &_cmp);
+	if (cmp != 0) {
+		ret = lut_lookup(fields[cmp-1], cmp_lut,
+				 sizeof(cmp_lut)/sizeof(symbol_t), &cmp);
 		if (!ret) {
-			return 3;
+			return INVALID_COMPARISON;
 		}
 	}
 
-	if (_jmp) {
-		ret = lut_lookup(fields[_jmp-1], jmp_lut,
-				 sizeof(jmp_lut)/sizeof(symbol_t), &_dst);
+	if (jmp != 0) {
+		ret = lut_lookup(fields[jmp-1], jmp_lut,
+				 sizeof(jmp_lut)/sizeof(symbol_t), &dst);
 		if (!ret) {
-			return 4;
+			return INVALID_JUMP;
 		}
 	}
 
 	// construct the machine code
-	code = 0xe000; // 1110 0000 0000 0000
-	code |= (_cmp << 6);
-	code |= (_dst << 3);
-	code |= _jmp;
+	uint16_t code = 0xe000;
+	code |= (cmp << 6);
+	code |= (dst << 3);
+	code |= jmp;
 
 	return code;
 }
 
-void
+static void
 cerror(int err, char *filename, int line)
 {
 	char str[128];
@@ -193,36 +202,37 @@ cerror(int err, char *filename, int line)
 	}
 }
 
-void
+static void
 lerror(int err, char *filename, int line)
 {
+	bool is_error = true;
 	char str[128];
-
 	str[0] = '\0';
 
 	switch (err) {
-		case 0x8001:
-			sprintf(str, "%s:%d [error]: Missing parentheses",
-				filename, line);
-			break;
-		case 0x8002:
-			sprintf(str, "%s:%d [error]: Duplicate label",
-				filename, line);
-			break;
-		case 0x8003:
-			sprintf(str, "%s:%d [error]: Labels have to contain characters "
-				"(A-Z, a-z, 0-9, _, ., $)", filename, line);
-			break;
-		default:
-			break;
+	case 0x8001:
+		sprintf(str, "%s:%d [error]: Missing parentheses",
+			filename, line);
+		break;
+	case 0x8002:
+		sprintf(str, "%s:%d [error]: Duplicate label",
+			filename, line);
+		break;
+	case 0x8003:
+		sprintf(str, "%s:%d [error]: Labels have to contain characters "
+			"(A-Z, a-z, 0-9, _, ., $)", filename, line);
+		break;
+	default:
+		is_error = false;
+		break;
 	}
 
-	if (str[0] != '\0') {
+	if (is_error) {
 		suicide(str);
 	}
 }
 
-bool
+static bool
 isignored(char *line)
 {
 	if ((line[0] == '\0') || (line[0] == '/' && line[1] == '/') || (line[0] == 13) ) {
@@ -232,25 +242,24 @@ isignored(char *line)
 	}
 }
 
-int
+static int
 islabel(char *line, uint16_t address, dict_t *labels)
 {
-	int i, j, sz;
-	symbol_t entry;
-	bool ret = false;
-
 	if (line[0] != '(' ) {
 		return 1;
 	}
 
-	sz = strlen(line);
+	int sz = strlen(line);
+	symbol_t entry;
 	entry.str = malloc((sz - 1) * sizeof(char));
 
 	if (line[sz - 1] != ')') {
 		return 0x8001;
 	}
 
-	for (i = 1, j = 0 ; i < sz-1 ; i++, j++) {
+	bool ret = false;
+	int j = 0;
+	for (int i = 1, j = 0 ; i < sz-1 ; i++, j++) {
 		ret = ((line[i] >= 48) && (line[i] <= 57)); //0-9
 		ret |= ((line[i] >= 65) && (line[i] <= 90)); //A-Z
 		ret |= ((line[i] >= 97) && (line[i] <= 122)); //a-z
@@ -283,44 +292,48 @@ islabel(char *line, uint16_t address, dict_t *labels)
 int
 main(int argc, char *argv[])
 {
-	char *l, *filename, err_str[128];
-	uint16_t code, addr = 0;
-	dict_t *labels, *variables;
-	int ret, lines = 1;
-	FILE *ifp, *tfp, *ofp;
 
 	if (argc != 2) {
 		suicide("\nWrong usage\nUsage:\n\t hxcasm <filename>\n\n");
 	}
 
-	filename = argv[1];
+	char *filename = argv[1];
+	FILE *ifp;
 	if ((ifp = fopen(filename, "r")) == NULL) {
 		suicide("Cannot open file");
 	}
 
+	FILE *tfp;
 	if ((tfp = fopen("out.s", "w+")) == NULL) {
 		suicide("Cannot open file");
 	}
 
+	dict_t *labels;
 	labels = init_dict();
+
+	dict_t *variables;
 	variables = init_dict();
 
-	/* first pass: labels */
+	// First pass: labels
+	char *l;
+	int lines = 1;
 	while ((l = fgetl(ifp)) != NULL) {
 		trim_whitespace(l);
 
 		if (!isignored(l)) {
-			ret = remove_comments(l);
-			if (ret) {
+			int ret = remove_comments(l);
+			if (ret == 1) {
+				char err_str[128];
 				sprintf(err_str, "%s:%d [error]: invalid comment syntax",
 					filename, lines);
 				suicide(err_str);
 			}
 
+			uint16_t addr = 0;
 			ret = islabel(l, addr, labels);
 			lerror(ret, filename, lines);
 
-			if (!ret) {
+			if (ret != 0) {
 				fwrite(l, sizeof(char), strlen(l), tfp);
 				fwrite("\n", sizeof(char), 1, tfp);
 				addr++;
@@ -339,7 +352,7 @@ main(int argc, char *argv[])
 	fseek(tfp, 0, SEEK_SET);
 	fclose(ifp);
 
-
+	FILE *ofp;
 	if ((ofp = fopen("out.hack", "w")) == NULL) {
 		suicide("Cannot open file out.hack");
 	}
@@ -348,6 +361,7 @@ main(int argc, char *argv[])
 
 	while ((l = fgetl(tfp)) != NULL)	{
 		// handle code
+		uint16_t code;
 		if (l[0] == '@') {
 			code = ainstr2code(l+1, labels, variables);
 		} else {

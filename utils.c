@@ -30,11 +30,10 @@ isnum(char *str, uint16_t *num)
 char
 *fgetl(FILE *fp)
 {
-	char curr=0, *line;
-	int size = 0, resize = 0;
-
-	line = (char *)malloc(512 * sizeof(char));
-
+	char *line = (char *)malloc(512 * sizeof(char));
+	int size = 0;
+	int resize = 0;
+	char curr = '\0';
 	while (!feof(fp)) {
 		fread(&curr, sizeof(char), 1, fp);
 		line[size] = curr;
@@ -62,7 +61,8 @@ char
 void
 trim_whitespace(char *str)
 {
-	char *i=str, *j=str;
+	char *i = str;
+	char *j = str;
 
 	while (*j != 0) {
 		*i = *j++;
@@ -87,7 +87,6 @@ remove_comments(char *str)
 		}
 		str++;
 	}
-
 	return 0;
 }
 
@@ -117,11 +116,8 @@ print_binary16(uint16_t num)
 void
 fprint_binary16(FILE *fp, uint16_t num)
 {
-	int i;
-	char bit;
-
-	for (i = 15 ; i != 0 ; i--) {
-		bit = ((num >> i) & 1) + 48;
+	for (int i = 15 ; i != 0 ; i--) {
+		char bit = ((num >> i) & 1) + 48;
 		fwrite(&bit, sizeof(char), 1, fp);
 	}
 }

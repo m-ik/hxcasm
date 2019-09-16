@@ -7,9 +7,7 @@
 bool
 lut_lookup(char *key, symbol_t *lut, int sz, uint16_t *code)
 {
-	int i;
-
-	for (i = 0 ; i < sz ; i++) {
+	for (int i = 0 ; i < sz ; i++) {
 		if (!strcmp(key, lut->str)) {
 			*code = lut->val;
 			return true;
@@ -23,8 +21,7 @@ lut_lookup(char *key, symbol_t *lut, int sz, uint16_t *code)
 dict_t *
 init_dict(void)
 {
-	dict_t *dict;
-	dict = malloc(sizeof(dict_t));
+	dict_t *dict = malloc(sizeof(dict_t));
 	dict->len = 0;
 	dict->cap = 1;
 	dict->entries = malloc(dict->cap * GROWTH_SIZE * sizeof(symbol_t));
@@ -50,13 +47,11 @@ dict_insert(dict_t *d, symbol_t e)
 bool
 dict_lookup(char *key, dict_t *d, uint16_t *val)
 {
-	int i;
-
 	if (d->len == 0) {
 		return false;
 	}
 
-	for (i = 0 ; i < d->len ; i++) {
+	for (int i = 0 ; i < d->len ; i++) {
 		if (!strcmp(key, d->entries[i].str)) {
 			*val = d->entries[i].val;
 			return true;
@@ -69,9 +64,7 @@ dict_lookup(char *key, dict_t *d, uint16_t *val)
 void
 free_dict(dict_t *d)
 {
-	int i;
-
-	for (i = 0 ; i < d->len ; i++) {
+	for (int i = 0 ; i < d->len ; i++) {
 		free(d->entries[i].str);
 	}
 	free(d->entries);
