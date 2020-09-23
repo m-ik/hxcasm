@@ -37,10 +37,9 @@ suicide(const char *error_str)
 static uint16_t
 ainstr2code(char *instr, dict_t *l, dict_t *v)
 {
-	bool ret;
 	uint16_t code;
 
-	ret = isnum(instr, &code);
+	bool ret = isnum(instr, &code);
 	if (ret) {
 		return code;
 	}
@@ -87,16 +86,10 @@ ainstr2code(char *instr, dict_t *l, dict_t *v)
 static uint16_t
 cinstr2code(char *str)
 {
-	uint8_t c = 0;
-	uint8_t flag = 0;
+	int c = 0;
+	int flag = 0;
+	int jmp_flag = 0;
 	char fields[3][4];
-	bool ret;
-
-	uint16_t dst = 0;
-	uint16_t cmp = 0;
-	uint16_t jmp = 0;
-
-	bool jmp_flag = false;
 
 	while (*str != '\0') {
 		if (*str == '=') {
@@ -117,11 +110,15 @@ cinstr2code(char *str)
 
 	fields[flag][c] = 0;
 
+	uint16_t dst = 0;
+	uint16_t cmp = 0;
+	uint16_t jmp = 0;
+
 	switch (flag) {
 	case 0:
 		return INVALID_COMMAND;
 	case 1:
-		if (jmp_flag) {
+		if (jmp_flag > 0) {
 			dst = 0;
 			cmp = 1;
 			jmp = 2;
@@ -138,8 +135,9 @@ cinstr2code(char *str)
 		break;
 	}
 
+	bool ret = false;
 	if (dst != 0) {
-		ret = lut_lookup(fields[dst-1], dst_lut,
+		ret = lut_lookup(fields[dst - 1], dst_lut,
 				 sizeof(dst_lut)/sizeof(symbol_t), &dst);
 		if (!ret) {
 			return INVALID_DESTINATION;
@@ -147,7 +145,7 @@ cinstr2code(char *str)
 	}
 
 	if (cmp != 0) {
-		ret = lut_lookup(fields[cmp-1], cmp_lut,
+		ret = lut_lookup(fields[cmp - 1], cmp_lut,
 				 sizeof(cmp_lut)/sizeof(symbol_t), &cmp);
 		if (!ret) {
 			return INVALID_COMPARISON;
@@ -155,14 +153,14 @@ cinstr2code(char *str)
 	}
 
 	if (jmp != 0) {
-		ret = lut_lookup(fields[jmp-1], jmp_lut,
+		ret = lut_lookup(fields[jmp - 1], jmp_lut,
 				 sizeof(jmp_lut)/sizeof(symbol_t), &dst);
 		if (!ret) {
 			return INVALID_JUMP;
 		}
 	}
 
-	// construct the machine code
+	// Construct the machine code
 	uint16_t code = 0xe000;
 	code |= (cmp << 6);
 	code |= (dst << 3);
@@ -175,7 +173,6 @@ static void
 cerror(int err, char *filename, int line)
 {
 	char str[128];
-
 	str[0] = '\0';
 
 	switch (err) {
@@ -250,8 +247,9 @@ islabel(char *line, uint16_t address, dict_t *labels)
 	}
 
 	int sz = strlen(line);
-	symbol_t entry;
-	entry.str = malloc((sz - 1) * sizeof(char));
+	symbol_t entry = {
+		.str = malloc((sz - 1) * sizeof(char))
+	};
 
 	if (line[sz - 1] != ')') {
 		return 0x8001;
@@ -259,13 +257,13 @@ islabel(char *line, uint16_t address, dict_t *labels)
 
 	bool ret = false;
 	int j = 0;
-	for (int i = 1, j = 0 ; i < sz-1 ; i++, j++) {
-		ret = ((line[i] >= 48) && (line[i] <= 57)); //0-9
-		ret |= ((line[i] >= 65) && (line[i] <= 90)); //A-Z
-		ret |= ((line[i] >= 97) && (line[i] <= 122)); //a-z
-		ret |= line[i] == 36; //$
-		ret |= line[i] == 46; //.
-		ret |= line[i] == 95; //_
+	for (int i = 1, j = 0 ; i < sz - 1 ; i++, j++) {
+		ret = ((line[i] >= '0') && (line[i] <= '9'));
+		ret |= ((line[i] >= 'A') && (line[i] <= 'Z'));
+		ret |= ((line[i] >= 'a') && (line[i] <= 'z'));
+		ret |= line[i] == '$';
+		ret |= line[i] == '.';
+		ret |= line[i] == '_';
 
 		if (!ret) {
 			return 0x8003;
@@ -277,7 +275,6 @@ islabel(char *line, uint16_t address, dict_t *labels)
 	entry.str[j] = '\0';
 
 	ret = dict_lookup(entry.str, labels, &(entry.val));
-
 	if (ret) {
 		return 0x8002;
 	}
@@ -292,7 +289,6 @@ islabel(char *line, uint16_t address, dict_t *labels)
 int
 main(int argc, char *argv[])
 {
-
 	if (argc != 2) {
 		suicide("\nWrong usage\nUsage:\n\t hxcasm <filename>\n\n");
 	}
@@ -308,18 +304,15 @@ main(int argc, char *argv[])
 		suicide("Cannot open file");
 	}
 
-	dict_t *labels;
-	labels = init_dict();
-
-	dict_t *variables;
-	variables = init_dict();
+	dict_t *labels = dict_new();
+	dict_t *variables = dict_new();
 
 	// First pass: labels
 	char *l;
-	int lines = 1;
 	while ((l = fgetl(ifp)) != NULL) {
 		trim_whitespace(l);
 
+		int lines = 1;
 		if (!isignored(l)) {
 			int ret = remove_comments(l);
 			if (ret == 1) {
@@ -357,13 +350,12 @@ main(int argc, char *argv[])
 		suicide("Cannot open file out.hack");
 	}
 
-	lines = 1;
-
+	int lines = 1;
 	while ((l = fgetl(tfp)) != NULL)	{
-		// handle code
+		// Handle code
 		uint16_t code;
 		if (l[0] == '@') {
-			code = ainstr2code(l+1, labels, variables);
+			code = ainstr2code(l + 1, labels, variables);
 		} else {
 			code = cinstr2code(l);
 		}
@@ -378,8 +370,8 @@ main(int argc, char *argv[])
 	fclose(tfp);
 	fclose(ofp);
 
-	free_dict(labels);
-	free_dict(variables);
+	dict_free(labels);
+	dict_free(variables);
 
 	return 0;
 }

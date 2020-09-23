@@ -26,7 +26,7 @@ typedef struct dict_t {
 
 bool lut_lookup(char *key, symbol_t *lut, int sz, uint16_t *code);
 
-dict_t *init_dict(void);
+dict_t *dict_new(void);
 
 /*
 	function:		dict_insert
@@ -45,6 +45,6 @@ void dict_insert(dict_t *d, symbol_t e);
  */
 
 bool dict_lookup(char *key, dict_t *d, uint16_t *val);
-void free_dict(dict_t *d);
+void dict_free(dict_t *d);
 
 #endif

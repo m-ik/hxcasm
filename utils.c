@@ -30,11 +30,11 @@ isnum(char *str, uint16_t *num)
 char
 *fgetl(FILE *fp)
 {
+	int size = 0, resize = 0;
 	char *line = (char *)malloc(512 * sizeof(char));
-	int size = 0;
-	int resize = 0;
-	char curr = '\0';
+
 	while (!feof(fp)) {
+		char curr = '\0';
 		fread(&curr, sizeof(char), 1, fp);
 		line[size] = curr;
 		size++;
@@ -64,7 +64,7 @@ trim_whitespace(char *str)
 	char *i = str;
 	char *j = str;
 
-	while (*j != 0) {
+	while (*j != '\0') {
 		*i = *j++;
 		if ((*i != ' ') && (*i != '\t')) {
 			i++;

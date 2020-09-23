@@ -19,7 +19,7 @@ lut_lookup(char *key, symbol_t *lut, int sz, uint16_t *code)
 }
 
 dict_t *
-init_dict(void)
+dict_new(void)
 {
 	dict_t *dict = malloc(sizeof(dict_t));
 	dict->len = 0;
@@ -62,7 +62,7 @@ dict_lookup(char *key, dict_t *d, uint16_t *val)
 }
 
 void
-free_dict(dict_t *d)
+dict_free(dict_t *d)
 {
 	for (int i = 0 ; i < d->len ; i++) {
 		free(d->entries[i].str);
