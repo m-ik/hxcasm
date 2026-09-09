@@ -1,14 +1,10 @@
-# Files
 *.o
 *.s
 *.S
-*.hack
 *.out
 *.swp
 *.tmp
-hxcasm
+*.hack
 
-# Folders
-tmp/
-out/
-obj/
+test/unit/run
+hxcasm
