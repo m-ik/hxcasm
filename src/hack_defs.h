@@ -6,13 +6,14 @@
 #include <string.h>
 
 #define HACK_C_INSTRUCTION_BASE 0xe000
-#define HACK_VAR_START_ADDR     0x10
+#define HACK_VAR_START_ADDR 0x10
 
 struct hack_table_entry {
 	const char *name;
 	uint16_t val;
 };
 
+// clang-format off
 static const struct hack_table_entry predef_table[] = {
 	{ "R0",     0x0000 },
 	{ "R1",     0x0001 },
@@ -95,6 +96,7 @@ static const struct hack_table_entry jmp_table[] = {
 	{ "JMP", 0x07 },
 	{ NULL,  -1 },
 };
+// clang-format on
 
 static inline int lookup_table(const struct hack_table_entry table[],
 			       const char *name)

@@ -67,11 +67,9 @@ static void parse_c_instr(struct parsed_line *parsed, char *s, size_t len)
 	char *equal = strchr(s, '=');
 	char *semicolon = strchr(s, ';');
 
-	if ((semicolon && semicolon < equal) ||
-	   equal == start ||
-	   equal >= (start + len - 1) ||
-	   semicolon == start ||
-	   semicolon >= (start + len - 1))
+	if ((semicolon && semicolon < equal) || equal == start ||
+	    equal >= (start + len - 1) || semicolon == start ||
+	    semicolon >= (start + len - 1))
 		return;
 
 	char *dst = NULL;

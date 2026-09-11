@@ -14,10 +14,10 @@ struct symbol {
 
 struct hashtable *symbol_table_init(void);
 void symbol_table_destroy(struct hashtable *symbol_table);
-bool symbol_table_insert(struct hashtable *symbol_table,
-			 const char *name, uint16_t val);
+bool symbol_table_insert(struct hashtable *symbol_table, const char *name,
+			 uint16_t val);
 bool symbol_table_insert_undef(struct hashtable *symbol_table,
-			 const char *name);
+			       const char *name);
 struct symbol *symbol_table_lookup(struct hashtable *symbol_table,
 				   const char *name);
 

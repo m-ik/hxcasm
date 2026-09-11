@@ -4,11 +4,10 @@
 
 struct hashtable *hashtable_create(size_t size, const struct hashtable_ops *ops)
 {
-	struct hashtable *h = calloc(1,
-		sizeof(struct hashtable) + size * sizeof(struct hashitem *));
+	struct hashtable *h = calloc(
+		1, sizeof(struct hashtable) + size * sizeof(struct hashitem *));
 	if (!h)
 		return NULL;
-
 
 	h->size = size;
 	h->ops.hash = ops->hash;

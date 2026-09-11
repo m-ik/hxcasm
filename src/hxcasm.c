@@ -54,8 +54,8 @@ static void fprint_bin16(FILE *stream, uint16_t num)
 }
 
 static enum res_status resolve(uint16_t *address, struct parsed_line *line,
-			struct hashtable *symbol_table, uint16_t pc,
-			struct patch_list **patch_list_tail)
+			       struct hashtable *symbol_table, uint16_t pc,
+			       struct patch_list **patch_list_tail)
 {
 	if (line->sym.is_constant) {
 		*address = (uint16_t)strtol(line->sym.name, NULL, 10);
@@ -66,14 +66,15 @@ static enum res_status resolve(uint16_t *address, struct parsed_line *line,
 	if (line->type == LINE_TYPE_A_INSTR) {
 		if (!sym) {
 			if (!symbol_table_insert_undef(symbol_table,
-						line->sym.name))
+						       line->sym.name))
 				return RESOLVE_FAIL_ADD_SYMBOL;
 
 			sym = symbol_table_lookup(symbol_table, line->sym.name);
 		}
 
 		if (sym->undefined) {
-			struct patch_list *new = malloc(sizeof(struct patch_list));
+			struct patch_list *new =
+				malloc(sizeof(struct patch_list));
 			new->sym = symbol_table_lookup(symbol_table,
 						       line->sym.name);
 			new->next = NULL;
@@ -86,7 +87,8 @@ static enum res_status resolve(uint16_t *address, struct parsed_line *line,
 		*address = sym->val;
 	} else {
 		if (!sym) {
-			if (!symbol_table_insert(symbol_table, line->sym.name, pc))
+			if (!symbol_table_insert(symbol_table, line->sym.name,
+						 pc))
 				return RESOLVE_FAIL_ADD_SYMBOL;
 		} else {
 			if (!sym->undefined)
@@ -160,8 +162,7 @@ int main(int argc, char *argv[])
 	 * backpatching.
 	 */
 
-	struct hashtable *symbol_table =
-		symbol_table_init();
+	struct hashtable *symbol_table = symbol_table_init();
 
 	char *line = NULL;
 	size_t linebufsize = 0;
@@ -199,7 +200,8 @@ int main(int argc, char *argv[])
 				fputs("0000000000000000\n", output_stream);
 				break;
 			case RESOLVE_FAIL_ADD_SYMBOL:
-				printf("error: line %lu: failed to add symbol\n", count);
+				printf("error: line %lu: failed to add symbol\n",
+				       count);
 				goto exit;
 			default:
 				break;
@@ -210,10 +212,12 @@ int main(int argc, char *argv[])
 				      &patch_list);
 			switch (res) {
 			case RESOLVE_FAIL_DUP_LABEL:
-				printf("error: line %lu: duplicate label\n", count);
+				printf("error: line %lu: duplicate label\n",
+				       count);
 				goto exit;
 			case RESOLVE_FAIL_ADD_SYMBOL:
-				printf("error: line %lu: failed to add symbol\n", count);
+				printf("error: line %lu: failed to add symbol\n",
+				       count);
 				goto exit;
 			default:
 				break;

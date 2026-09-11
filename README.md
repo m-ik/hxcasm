@@ -41,6 +41,11 @@ make DEBUG=1 test-unit
 ASAN_OPTIONS=abort_on_error=1 gdb --args ./test/unit/run --gtest_filter="ParseTest.*"
 ```
 
+## coding style
+
+Linux kernel coding style has been adopted. `clang-format` is used to
+automatically format the code. 
+
 ## sources
 
 * The Elements of Computing Systems, Building a Modern Computer from

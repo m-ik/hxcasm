@@ -30,7 +30,7 @@ static size_t symbol_hash(const void *s)
 {
 	const char *key = s;
 	size_t hash = 42;
-	while(*key != '\0') {
+	while (*key != '\0') {
 		hash = _mm_crc32_u8(hash, *key);
 		key++;
 	}
@@ -73,8 +73,8 @@ void symbol_table_destroy(struct hashtable *symbol_table)
 	hashtable_destroy(symbol_table);
 }
 
-bool symbol_table_insert(struct hashtable *symbol_table,
-	const char *name, uint16_t val)
+bool symbol_table_insert(struct hashtable *symbol_table, const char *name,
+			 uint16_t val)
 {
 	struct symbol *sym = symbol_new(name, strlen(name), val);
 	if (!sym)
@@ -85,8 +85,7 @@ bool symbol_table_insert(struct hashtable *symbol_table,
 	return true;
 }
 
-bool symbol_table_insert_undef(struct hashtable *symbol_table,
-	const char *name)
+bool symbol_table_insert_undef(struct hashtable *symbol_table, const char *name)
 {
 	struct symbol *sym = symbol_new(name, strlen(name), 0);
 	if (!sym)
@@ -98,7 +97,8 @@ bool symbol_table_insert_undef(struct hashtable *symbol_table,
 	return true;
 }
 
-struct symbol *symbol_table_lookup(struct hashtable *symbol_table, const char *name)
+struct symbol *symbol_table_lookup(struct hashtable *symbol_table,
+				   const char *name)
 {
 	struct symbol *sym = NULL;
 

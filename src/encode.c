@@ -1,7 +1,8 @@
 #include "encode.h"
 #include "hack_defs.h"
 
-static uint16_t encode_c_instr(const char *dst, const char *cmp, const char *jmp)
+static uint16_t encode_c_instr(const char *dst, const char *cmp,
+			       const char *jmp)
 {
 	uint16_t code = HACK_C_INSTRUCTION_BASE;
 

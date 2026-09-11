@@ -5,12 +5,17 @@ extern "C" {
 }
 
 class ParseTest : public ::testing::Test {
-protected:
-	void SetUp() override {}
-	void TearDown() override {}
+    protected:
+	void SetUp() override
+	{
+	}
+	void TearDown() override
+	{
+	}
 };
 
-TEST_F(ParseTest, ParseLabel) {
+TEST_F(ParseTest, ParseLabel)
+{
 	uint16_t val;
 	struct parsed_line parsed;
 	char line[] = "(LOOP)";
@@ -20,7 +25,8 @@ TEST_F(ParseTest, ParseLabel) {
 	EXPECT_FALSE(parsed.sym.is_constant);
 }
 
-TEST_F(ParseTest, ParseAInstructionVariable) {
+TEST_F(ParseTest, ParseAInstructionVariable)
+{
 	uint16_t val;
 	struct parsed_line parsed;
 	char line[] = "@tmp";
@@ -30,7 +36,8 @@ TEST_F(ParseTest, ParseAInstructionVariable) {
 	EXPECT_FALSE(parsed.sym.is_constant);
 }
 
-TEST_F(ParseTest, ParseAInstructionConstant) {
+TEST_F(ParseTest, ParseAInstructionConstant)
+{
 	uint16_t val;
 	struct parsed_line parsed;
 	char line[] = "@17";
@@ -40,7 +47,8 @@ TEST_F(ParseTest, ParseAInstructionConstant) {
 	EXPECT_TRUE(parsed.sym.is_constant);
 }
 
-TEST_F(ParseTest, ParseCInstructionDestComp) {
+TEST_F(ParseTest, ParseCInstructionDestComp)
+{
 	uint16_t val;
 	struct parsed_line parsed;
 	char line[] = "D=D-M";
@@ -51,7 +59,8 @@ TEST_F(ParseTest, ParseCInstructionDestComp) {
 	EXPECT_TRUE(parsed.c.jmp == NULL);
 }
 
-TEST_F(ParseTest, ParseCInstructionCompJump) {
+TEST_F(ParseTest, ParseCInstructionCompJump)
+{
 	uint16_t val;
 	struct parsed_line parsed;
 	char line[] = "0;JMP";
@@ -62,7 +71,8 @@ TEST_F(ParseTest, ParseCInstructionCompJump) {
 	EXPECT_STREQ(parsed.c.jmp, "JMP");
 }
 
-TEST_F(ParseTest, ParseCInstructionDestCompJump) {
+TEST_F(ParseTest, ParseCInstructionDestCompJump)
+{
 	uint16_t val;
 	struct parsed_line parsed;
 	char line[] = "ADM=D&M;JLE";
@@ -73,7 +83,8 @@ TEST_F(ParseTest, ParseCInstructionDestCompJump) {
 	EXPECT_STREQ(parsed.c.jmp, "JLE");
 }
 
-TEST_F(ParseTest, ParseCInstructionMalformed) {
+TEST_F(ParseTest, ParseCInstructionMalformed)
+{
 	uint16_t val;
 	struct parsed_line parsed;
 	char line[] = "JMP;D=D+1";
@@ -81,7 +92,8 @@ TEST_F(ParseTest, ParseCInstructionMalformed) {
 	EXPECT_EQ(parsed.type, LINE_TYPE_INVALID);
 }
 
-TEST_F(ParseTest, ParseCInstructionInvalidDst) {
+TEST_F(ParseTest, ParseCInstructionInvalidDst)
+{
 	uint16_t val;
 	struct parsed_line parsed;
 	char line[] = "X=D+1;JMP";
@@ -89,7 +101,8 @@ TEST_F(ParseTest, ParseCInstructionInvalidDst) {
 	EXPECT_EQ(parsed.type, LINE_TYPE_INVALID);
 }
 
-TEST_F(ParseTest, ParseCInstructionMissingCmp) {
+TEST_F(ParseTest, ParseCInstructionMissingCmp)
+{
 	uint16_t val;
 	struct parsed_line parsed;
 	char line[] = "D=;JLE";
@@ -97,7 +110,8 @@ TEST_F(ParseTest, ParseCInstructionMissingCmp) {
 	EXPECT_EQ(parsed.type, LINE_TYPE_INVALID);
 }
 
-TEST_F(ParseTest, ParseCInstructionInvalidJmp) {
+TEST_F(ParseTest, ParseCInstructionInvalidJmp)
+{
 	uint16_t val;
 	struct parsed_line parsed;
 	char line[] = "D=D+1;JMP;JMP";
